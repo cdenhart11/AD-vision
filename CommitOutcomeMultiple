@@ -1,0 +1,35 @@
+'used to commit multiple outcomes to predecessor outcome with one click (VBA excel)
+
+Sub Commit()
+
+'
+' Add_Pred_Outcome Macro
+'
+Dim i As Integer
+Dim j As Long
+
+lLastRow = Cells(ActiveSheet.Rows.Count, 1).End(xlUp).Row
+
+j = ActiveCell.Column
+
+Application.ScreenUpdating = False
+'
+For i = 2 To lLastRow
+
+    Cells(i, j + 1).Select
+    ActiveCell.Formula = "=IF(ISBLANK(RC[-2]),IF(ISBLANK(RC[-1]),"""",RC[-1]),CONCATENATE(RC[-2],"", "",RC[-1]))"
+    Cells(i, j + 1).Select
+    Selection.Copy
+    Cells(i, j - 1).Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Cells(i, j + 1).Select
+    Selection.ClearContents
+    Cells(i, j).Select
+    Selection.ClearContents
+    
+Next i
+
+Application.ScreenUpdating = True
+
+End Sub
