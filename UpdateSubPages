@@ -1,0 +1,107 @@
+'Used to automatically push updates from master page to sub-pages
+
+Sub Update_Strategy_Team_Pages()
+'
+' Written by Chris Denhart on 8/17/2017
+' Developed for Internal Use to Deloitte IRS AD Vision Strategy Team
+' Copyright Chris Denhart, All Rights Reserved
+
+'
+Dim i As Integer
+Dim x As Integer
+Dim j As Long
+Dim Strats As Variant
+Dim Strat As Variant
+
+Strats = Array("Software Professionals", "Service Orchestration", "Data-Centric Services", "Process Excellence", "Shared Culture", "All Strategy Groups Req'd")
+
+lLastRow = Cells(ActiveSheet.Rows.Count, 1).End(xlUp).Row
+
+x = lLastRow
+
+Application.ScreenUpdating = Falase
+
+
+For Each Strat In Strats
+
+    Worksheets(Strat).Select
+    ActiveSheet.Rows("4:4").Select
+    Range(Selection, Selection.End(xlDown)).Select
+    Selection.ClearContents
+
+Next Strat
+       
+i = 7
+       
+For Each Strat In Strats
+
+    Sheets("All Planned Outcomes").Select
+    ActiveSheet.Range("$B4:$P200").AutoFilter Field:=i, Criteria1:="<>"
+    Range("B4:B200").Select
+    Selection.Copy
+    Worksheets(Strat).Select
+    ActiveSheet.Range("B4").Select
+    ActiveSheet.Paste
+    Sheets("All Planned Outcomes").Select
+    ActiveSheet.Range("$B4:$P200").AutoFilter Field:=i
+    i = i + 1
+Next Strat
+
+'loop through all worksheets adding index/match
+'formulas to update table info
+
+For Each Strat In Strats
+    
+    Worksheets(Strat).Select
+    ActiveSheet.Range("C4").Select
+    ActiveCell.FormulaR1C1 = _
+        "=IFNA(INDEX('All Planned Outcomes'!R4C3:R200C16,MATCH(RC2,'All Planned Outcomes'!R4C2:R200C2,0),MATCH(R3C,'All Planned Outcomes'!R3C3:R3C16,0)),"""")"
+    Range("C4").Select
+    Selection.AutoFill Destination:=Range("C4:P4"), Type:=xlFillDefault
+
+'Set j must be in active cell as the end of
+'the range varies from sheet to sheet
+j = Cells(ActiveSheet.Rows.Count, 2).End(xlUp).Row
+    
+'copy and paste the Index/Match formula into
+'all of the cells to update tables
+    Range(Cells(4, 3), Cells(4, 16)).Select
+    Selection.Copy
+    ActiveSheet.Cells(j, 16).Select
+    Range(Selection, Cells(5, 3)).Select
+    ActiveSheet.Paste
+    
+'copy and paste all formulas as values to
+'speed up processing and reduce file size
+    Range(Cells(1, 1), Cells(j, 16)).Select
+    Selection.Copy
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    
+'filter the results by implementation year
+'so that the user can quickly see what is
+'in the near term vs in the long term
+    ActiveWorkbook.Worksheets(Strat).AutoFilter.Sort.SortFields. _
+        Clear
+    ActiveWorkbook.Worksheets(Strat).AutoFilter.Sort.SortFields.Add _
+        Key:=Range("F3"), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption _
+        :=xlSortNormal
+    With ActiveWorkbook.Worksheets(Strat).AutoFilter.Sort
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    
+    ActiveSheet.Cells(1, 1).Select
+    
+Next Strat
+
+'End macro by putting the users on "all planned outcomes" tab
+Sheets("All Planned Outcomes").Select
+ActiveSheet.Cells(1, 1).Select
+
+Application.ScreenUpdating = True
+
+End Sub
