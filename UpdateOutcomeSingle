@@ -1,0 +1,29 @@
+'this code updates the predecessor outcomes using a concatenate feature in Excel (VBA)
+
+Sub Add_Pred_Outcome()
+'
+' Add_Pred_Outcome Macro
+'
+Dim i As Long
+Dim j As Long
+i = ActiveCell.Row
+j = ActiveCell.Column
+
+Application.ScreenUpdating = False
+
+    Cells(i, j + 1).Select
+    ActiveCell.Formula = "=IF(ISBLANK(RC[-2]),RC[-1],CONCATENATE(RC[-2],"", "",RC[-1]))"
+    Cells(i, j + 1).Select
+    Selection.Copy
+    Cells(i, j - 1).Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Cells(i, j + 1).Select
+    Selection.ClearContents
+    Cells(i, j).Select
+    Selection.ClearContents
+    
+
+Application.ScreenUpdating = True
+
+End Sub
